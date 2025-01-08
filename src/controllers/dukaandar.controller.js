@@ -4,7 +4,8 @@ import Dukaandar from "../model/dukaandar.model.js";
 import Bepari from "../model/bepari.model.js";
 import Kb_dukaandar from "../model/khaataBook_dukaandar.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-
+import mongoose from "mongoose";
+const ObjectId=mongoose.Types.ObjectId;
 
 const getKhataByDate=asyncHandler(async(req,res)=>{
     const {date,dukaandarId}=req.body
@@ -19,9 +20,48 @@ const getKhataByDate=asyncHandler(async(req,res)=>{
 })
 
 const getKhataByDukaandar=asyncHandler(async(req,res)=>{
-    const {dukaandarId}=req.body
+    const {dukaandarId}=req.params
 
-    const khata=await Kb_dukaandar.find({dukaandarId})
+    const khata=await Kb_dukaandar.aggregate([
+        {
+            $match:{dukaandarId:new ObjectId(dukaandarId)}
+        },
+        {
+            $lookup:{
+                from:"dukaandars",
+                localField:"dukaandarId",
+                foreignField:"_id",
+                as:"dukaandar"
+            }
+        },
+  {
+    $unwind:'$purchases'
+  },{
+    $lookup: {
+      from: 'beparis',
+      localField: 'purchases.bepariId',
+      foreignField: '_id',
+      as: 'bepari'
+    }
+  },{
+    $group: {
+      _id: '$_id',
+      dukaandarId:{$first:'$dukaandarId'},
+      date:{$first:'$date'},
+      purchases:{
+      	$push:{
+          quantity:'$purchases.quantity',
+          amount: '$purchases.amount',
+          finalAmount: '$purchases.finalAmount',
+          bepari:{$first:'$bepari'}
+        }
+      },
+      totalAmount:{$first:'$totalAmount'},
+      paidAmount:{$first:'$paidAmount'},
+      balance:{$first:'$balance'}
+    }
+  }
+    ])
 
     if(!khata){
         return next(new ApiError(404,"Khata not found"))

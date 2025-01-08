@@ -16,7 +16,7 @@ const router = Router();
 
 router.post('/addUser',addUser);
 router.post('/login',loginUser);
-router.post('/logout',verifyJWT,logoutUser);
+router.get('/logout',verifyJWT,logoutUser);
 router.post('/addDukaandar',verifyJWT,addDukaandar);
 router.get('/viewDukaandars',verifyJWT,viewDukaandars);
 router.post('/viewDukaandarById',verifyJWT,viewDukaandarById);

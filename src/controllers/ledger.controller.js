@@ -141,7 +141,55 @@ const getLedgers=asyncHandler(async(req,res)=>{
 
 const getLedger=asyncHandler(async(req,res)=>{
     const {date}=req.params;
-    const ledger=await Ledger.findOne({date});
+    console.log(date);
+    const ledger=await Ledger.aggregate([
+        {
+            $match: { date: new Date(`${date}`) }
+        },
+        
+        {
+            $unwind: "$transactions", // Deconstruct the transactions array
+          },
+          {
+            $lookup: {
+              from: "dukaandars", // The collection name for Dukaandars
+              localField: "transactions.partyId",
+              foreignField: "_id",
+              as: "dukaandar",
+            },
+          },
+          {
+            $lookup: {
+              from: "beparis", // The collection name for Beparis
+              localField: "transactions.partyId",
+              foreignField: "_id",
+              as: "bepari",
+            },
+          },
+          {
+            $group: {
+              _id: "$_id",
+              date: { $first: "$date" },
+              totalInflow: { $first: "$totalInflow" },
+              totalOutflow: { $first: "$totalOutflow" },
+              balance: { $first: "$balance" },
+              balanceCash: { $first: "$balanceCash" },
+              transactions: {
+                $push: {
+                  type: "$transactions.type",
+                  relatedTo: "$transactions.relatedTo",
+                  partyId: "$transactions.partyId",
+                  amount: "$transactions.amount",
+                  method: "$transactions.method",
+                  notes: "$transactions.notes",
+                  dukaandar: { $first: "$dukaandar" },
+                  bepari: { $first: "$bepari" },
+                },
+              },
+            },
+          },
+  
+    ])
 
     if(!ledger){
         throw new ApiError(404,'Ledger not found');
@@ -150,5 +198,12 @@ const getLedger=asyncHandler(async(req,res)=>{
     res.status(200).json(new ApiResponse(200,{ledger}));
 })
 
+const getLedgersDate=asyncHandler(async(req,res)=>{
+    const ledgers=await Ledger.find();
 
-export { addInflow , addOutflow , getLedgers , getLedger }
+    const dates=ledgers.map(ledger=>ledger.date);
+
+    res.status(200).json(new ApiResponse(200,{dates}));
+})
+
+export { addInflow , addOutflow , getLedgers , getLedger, getLedgersDate }
