@@ -7,12 +7,11 @@ const api=axios.create({
         'Content-Type':'application/json',
     }
 })
-{console.log(import.meta.env.VITE_BACKEND_URL)}
 const token=localStorage.getItem('token');
 if(token){
     api.defaults.headers.common['Authorization']=`Bearer ${token}`;
 }
-
+{console.log(api.defaults.headers.common)}
 export const authService={
     login: async(email,password)=>{
         try {
@@ -20,6 +19,10 @@ export const authService={
             if(response.data.statusCode===200){
                 localStorage.setItem('token',response.data.message.token)
                 return response.data
+            }
+            else {
+                {console.log(response.message)}
+                return response.error
             }
         } catch (error) {
             throw error.response?.data || error
@@ -49,4 +52,27 @@ export const authService={
             throw error.response?.data || error
         }
     }
+}
+
+export const adminService={
+    addUser:async (userData)=>{
+        try {
+            const response=await api.post('/user/login',userData)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    prevLedger:async()=>{
+        try {
+            const response=await api.get('/ledger/getLedgersDate')
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    }   
 }

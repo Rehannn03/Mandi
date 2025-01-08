@@ -34,6 +34,7 @@ export function AuthProvider({children}){
         try {
             const response=await authService.login(email,password)
             setUser(response.message)
+            setLoading(false)
             // await checkAuth()
             return response
         } catch (error) {
@@ -42,6 +43,7 @@ export function AuthProvider({children}){
     }
 
     const logout=async()=>{
+        setLoading(true)
         try {
             await authService.logout()
             setUser(null)
