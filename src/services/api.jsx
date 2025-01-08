@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { data } from 'react-router';
 
 const api=axios.create({
     baseURL:`${import.meta.env.VITE_BACKEND_URL}/api/v1`,
@@ -11,7 +12,6 @@ const token=localStorage.getItem('token');
 if(token){
     api.defaults.headers.common['Authorization']=`Bearer ${token}`;
 }
-{console.log(api.defaults.headers.common)}
 export const authService={
     login: async(email,password)=>{
         try {
@@ -68,6 +68,57 @@ export const adminService={
     prevLedger:async()=>{
         try {
             const response=await api.get('/ledger/getLedgersDate')
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    getLedgerByDate:async(date)=>{
+        try {
+            {console.log(date+'T00:00:00.000+00:00')}
+            const response=await api.get(`/ledger/getLedger/${date+'T00:00:00.000+00:00'}`)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    getDukaandar:async()=>{
+        try {
+            const response=await api.get('/user/viewDukaandars')
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    addInflow:async(data)=>{
+        try {
+            const response=await api.post('/ledger/addInflow',data)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    addOutflow:async(data)=>{
+        try {
+            const response=await api.post('/ledger/addOutflow',data)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    getDukaandarKhata:async(id)=>{
+        try {
+            const response=await api.get(`/dukaandar/getKhataByDukaandar/${id}`)
             if(response.data.statusCode===200){
                 return response.data
             }

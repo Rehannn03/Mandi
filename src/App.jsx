@@ -8,15 +8,17 @@ import Ledger from './pages/Admin/Ledger'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import NewLedger from './pages/Admin/NewLedger'
 import PreviousLedgers from './pages/Admin/PrevLedger'
+import LedgerDetail from './pages/Admin/LedgerDetail'
+import Khaatas from './pages/Admin/Khaatas'
+import Dukaandar from './pages/Admin/Dukaandar'
+import DukaandarKhata from './pages/Admin/DukaandarKhata'
 import { Loader } from './components/Loader'
 import './App.css'
 
 const AdminRoute=({children})=>{
   const {user,loading}=useAuth()
 
-  // if(loading){
-  //   return <Loader/>
-  // }
+  {console.log(user)}
   if(!user || user?.user?.role!=='Admin'){
     return <Navigate to='/' replace/>
   }
@@ -45,6 +47,10 @@ function App() {
               <Route path='/admin/newLedger' element={<NewLedger/>}/>
               <Route path='/admin/resumeLedger' element={<NewLedger/>}/>
               <Route path='/admin/prevLedger' element={<PreviousLedgers/>}/>
+              <Route path='/admin/prevLedger/:date' element={<LedgerDetail/>}/>
+              <Route path='/admin/khaatas' element={<Khaatas/>}/>
+              <Route path='/admin/khaatas/dukaandar' element={<Dukaandar/>}/>
+              <Route path='/admin/khaatas/dukaandar/:dukaandarId' element={<DukaandarKhata/>}/>
             </Route>
           </Routes>
         </AuthProvider>

@@ -80,7 +80,7 @@ const PreviousLedgers = () => {
     return ledgerDates[selectedYear][selectedMonth].sort((a, b) => b - a).map(date => (
       <Link
         key={date.toISOString()}
-        to={`/admin/ledger/${date.toISOString().split('T')[0]}`}
+        to={`/admin/prevledger/${date.toISOString().split('T')[0]}`}
         className="block w-full text-left px-4 py-2 hover:bg-[#F3F4F6] transition duration-150 ease-in-out"
       >
         {date.toLocaleDateString()}

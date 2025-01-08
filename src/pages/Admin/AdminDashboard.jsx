@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/authContext";
-import { LayoutDashboard,UserPlus,Book ,LogOut,BookOpen,Menu} from "lucide-react";
+import { LayoutDashboard,UserPlus,Book ,LogOut,BookOpen,Menu,X} from "lucide-react";
 import {Link,useLocation,Outlet} from 'react-router'
 import { Loader } from "../../components/Loader";
 

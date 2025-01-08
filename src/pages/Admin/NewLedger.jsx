@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { adminService } from '../../services/api';
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 const NewLedger = () => {
@@ -25,16 +25,17 @@ const NewLedger = () => {
 
   useEffect(() => {
     fetchTransactions();
+    // fetchPartyIds();
   }, []);
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get('/api/transactions');
-      setTransactions(response.data.data.ledger.transactions);
+      const response = await adminService.getLedgerByDate(getTodayDate());
+      setTransactions(response.data.ledger.transactions);
       setLedgerSummary({
-        totalInflow: response.data.data.ledger.totalInflow,
-        totalOutflow: response.data.data.ledger.totalOutflow,
-        balance: response.data.data.ledger.balance,
+        totalInflow: response.data.ledger.totalInflow,
+        totalOutflow: response.data.ledger.totalOutflow,
+        balance: response.data.ledger.balance,
       });
     } catch (err) {
       setError('Failed to fetch transactions');
@@ -51,18 +52,24 @@ const NewLedger = () => {
     setError('');
 
     try {
-      const endpoint = formData.type === 'inflow' ? '/api/inflow' : '/api/outflow';
+      let response=''
+      const endpoint = formData.type === 'inflow' ?  'inflow' : 'outflow' ;
+      if(endpoint==='inflow'){
+        response=await adminService.addInflow(submissionData)
+      }else{
+        response=await adminService.addOutflow(submissionData)
+      }
       const submissionData = {
         ...formData,
         date: getTodayDate(),
       };
-      const response = await axios.post(endpoint, submissionData);
-      const newTransaction = response.data.data.ledger.transactions[response.data.data.ledger.transactions.length - 1];
+      // const response = await axios.post(endpoint, submissionData);
+      const newTransaction = response.data.ledger.transactions[response.data.ledger.transactions.length - 1];
       setTransactions(prevTransactions => [...prevTransactions, newTransaction]);
       setLedgerSummary({
-        totalInflow: response.data.data.ledger.totalInflow,
-        totalOutflow: response.data.data.ledger.totalOutflow,
-        balance: response.data.data.ledger.balance,
+        totalInflow: response.data.ledger.totalInflow,
+        totalOutflow: response.data.ledger.totalOutflow,
+        balance: response.data.ledger.balance,
       });
       setFormData({
         date: getTodayDate(),
@@ -237,16 +244,16 @@ const NewLedger = () => {
         <div className="p-6 grid grid-cols-3 gap-4">
           <div>
             <h3 className="text-lg font-semibold text-[#1E3A8A] mb-2 font-inter">Total Inflow</h3>
-            <p className="text-2xl font-bold text-[#16A34A]">${ledgerSummary.totalInflow.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-[#16A34A]">${ledgerSummary.totalInflow?ledgerSummary.totalInflow.toLocaleString():'0'}</p>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-[#1E3A8A] mb-2 font-inter">Total Outflow</h3>
-            <p className="text-2xl font-bold text-[#DC2626]">${ledgerSummary.totalOutflow.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-[#DC2626]">${ledgerSummary.totalOutflow?ledgerSummary.totalOutflow.toLocaleString():'0'}</p>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-[#1E3A8A] mb-2 font-inter">Balance</h3>
             <p className={`text-2xl font-bold ${ledgerSummary.balance >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
-              ${ledgerSummary.balance.toLocaleString()}
+              ${ledgerSummary.balance?ledgerSummary.balance.toLocaleString():'0'}
             </p>
           </div>
         </div>
@@ -266,14 +273,14 @@ const NewLedger = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-[#E5E7EB]">
-            {transactions.map((transaction, index) => (
+            {transactions?.map((transaction, index) => (
               <tr key={transaction._id} className={index % 2 === 0 ? 'bg-[#F9FAFB]' : 'bg-white'}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">
                   {new Date(transaction.date).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{transaction.type}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{transaction.relatedTo}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{transaction.partyId}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{transaction.type === 'inflow' ? transaction.dukaandar.name : transaction.bepari.name}</td>
                 <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.type === 'inflow' ? 'text-[#16A34A]' : 'text-[#DC2626]'} font-roboto`}>
                   {transaction.type === 'inflow' ? '+' : '-'}${transaction.amount.toLocaleString()}
                 </td>
