@@ -8,8 +8,8 @@ import { Router } from 'express'
 const router = Router()
 
 router.post('/addKhata',addKhata)
-router.post('/getKhata',getKhata)
-router.post('/getKhataByBepari',getKhataByBepari)
+router.get('/getKhata/:bepariId',getKhata)
+router.get('/getKhataByBepari/:bepariId',getKhataByBepari)
 
 export default router
 

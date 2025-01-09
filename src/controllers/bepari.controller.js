@@ -6,6 +6,8 @@ import Bepari from "../model/bepari.model.js";
 import Kb_bepari from "../model/khaataBook_bepari.model.js";
 import Kb_dukaandar from "../model/khaataBook_dukaandar.model.js";
 import Ledger from "../model/ledger.model.js";
+import mongoose from "mongoose";
+const ObjectId=mongoose.Types.ObjectId;
 const addKhata=asyncHandler(async(req,res)=>{
     const {bepariId,totalBakra,date,outFlowDetails,paidAmount,ratePerBakra}=req.body
     const bepari=await Bepari.findByIdAndUpdate({
@@ -33,8 +35,8 @@ const addKhata=asyncHandler(async(req,res)=>{
     })
 
     const dukaandarKhataUpdate=outFlowDetails.map(async(item)=>{
-        const dukaandar=await Dukaandar.findByIdAndUpdate({
-            _id:item.dukaandarId
+        const dukaandar=await Dukaandar.findOneAndUpdate({
+            _id:new ObjectId(item.dukaandarId)
         },{
             $inc:{
                 balance:item.totalAmount
@@ -42,6 +44,7 @@ const addKhata=asyncHandler(async(req,res)=>{
         },{
             new:true
         })
+        console.log(dukaandar)
         if(!dukaandar){
             return next(new ApiError(404,"Dukaandar not found"))
         }
@@ -87,9 +90,75 @@ const getKhata=asyncHandler(async(req,res)=>{
 })
 
 const getKhataByBepari=asyncHandler(async(req,res)=>{
-    const {bepariId}=req.body
-
-    const khata_bepari=await Kb_bepari.find({bepariId})
+    const {bepariId}=req.params
+    console.log(bepariId)
+    const khata_bepari=await Kb_bepari.aggregate(
+        [
+            {
+              $match: {
+                bepariId: new ObjectId(
+                  bepariId
+                )
+              }
+            },
+            {
+              $lookup: {
+                from: "beparis",
+                localField: "bepariId",
+                foreignField: "_id",
+                as: "bepari"
+              }
+            },
+            {
+              $unwind: "$outFlowDetails"
+            },
+            {
+              $lookup: {
+                from: "dukaandars",
+                localField: "outFlowDetails.dukaandarId",
+                foreignField: "_id",
+                as: "dukaandar"
+              }
+            },
+            {
+              $group: {
+                _id: "$_id",
+                bepariId: {
+                  $first: "$bepariId"
+                },
+                date: {
+                  $first: "$date"
+                },
+                outFlowDetails: {
+                    $push: {
+                        quantity: "$outFlowDetails.quantity",
+                        rate: "$outFlowDetails.rate",
+                        totalAmount: "$outFlowDetails.totalAmount",
+                        notes:'$outFlowDetails.notes',
+                        dukaandar: {
+                          $first: "$dukaandar"
+                        }
+                      }
+                },
+                totalBakra: {
+                  $first: "$totalBakra"
+                },
+                finalAmount: {
+                  $first: "$finalAmount"
+                },
+                ratePerBakra:{
+                  $first:"$ratePerBakra"
+                },
+                paidAmount:{
+                  $first:'$paidAmount'
+                },
+                balance: {
+                  $first: "$balance"
+                }
+              }
+            }
+          ]
+    )
 
     return res.status(200).json(new ApiResponse(200,"Khata fetched successfully",{khata_bepari}))
 })
