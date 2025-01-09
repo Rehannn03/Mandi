@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/authContext";
-import { LayoutDashboard,UserPlus,Book ,LogOut,BookOpen,Menu,X} from "lucide-react";
+import { LayoutDashboard,UserPlus,Book ,LogOut,BookOpen,Menu,X,CirclePlus} from "lucide-react";
 import {Link,useLocation,Outlet} from 'react-router'
 import { Loader } from "../../components/Loader";
 
@@ -29,6 +29,11 @@ function AdminDashboard() {
             name:'Khaatas',
             icon:BookOpen,
             link:'/admin/khaatas'
+        },
+        {
+          name:'Add Bakra',
+          icon:CirclePlus,
+          link:'/admin/addBakra'
         }
     ]
 

@@ -12,6 +12,9 @@ import LedgerDetail from './pages/Admin/LedgerDetail'
 import Khaatas from './pages/Admin/Khaatas'
 import Dukaandar from './pages/Admin/Dukaandar'
 import DukaandarKhata from './pages/Admin/DukaandarKhata'
+import Bepari from './pages/Admin/Bepari'
+import BepariKhata from './pages/Admin/BepariKhata'
+import AddBakra from './pages/Admin/AddBakra'
 import { Loader } from './components/Loader'
 import './App.css'
 
@@ -51,6 +54,9 @@ function App() {
               <Route path='/admin/khaatas' element={<Khaatas/>}/>
               <Route path='/admin/khaatas/dukaandar' element={<Dukaandar/>}/>
               <Route path='/admin/khaatas/dukaandar/:dukaandarId' element={<DukaandarKhata/>}/>
+              <Route path='/admin/khaatas/bepari' element={<Bepari/>}/>
+              <Route path='/admin/khaatas/bepari/:bepariId' element={<BepariKhata/>}/>
+              <Route path='/admin/addBakra' element={<AddBakra/>}/>
             </Route>
           </Routes>
         </AuthProvider>

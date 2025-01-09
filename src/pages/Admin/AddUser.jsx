@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { adminService } from '../../services/api';
 const AddUser = () => {
   const [formData, setFormData] = useState({
     role: 'Admin',
@@ -13,14 +13,15 @@ const AddUser = () => {
   });
 
   const [error, setError] = useState('');
-
+  const [success, setSuccess] = useState('');
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
     setError('');
+    setSuccess('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     // Perform validation
     if (!formData.name || !formData.role) {
@@ -40,24 +41,73 @@ const AddUser = () => {
       return;
     }
     
-    // If validation passes, you can submit the form data
-    console.log('Form submitted:', formData);
-    // Reset form after submission
-    setFormData({
-      role: 'Admin',
-      name: '',
-      email: '',
-      password: '',
-      shopName: '',
-      address: '',
-      contact: '',
-      phone: '',
-    });
+    try {
+      if(formData.role === 'Dukaandar'){
+        const response = await adminService.addDukaandar(formData);
+        if (response.statusCode === 200) {
+          setSuccess('User successfully added');
+          // Reset form after successful submission
+          setFormData({
+            role: 'Admin',
+            name: '',
+            email: '',
+            password: '',
+            shopName: '',
+            address: '',
+            contact: '',
+            phone: '',
+          });
+        } else {
+          setError('Failed to add user');
+        }
+      }
+      else if(formData.role === 'Bepari'){
+        const response = await adminService.addBepari(formData);
+        if (response.statusCode === 200) {
+          setSuccess('User successfully added');
+          // Reset form after successful submission
+          setFormData({
+            role: 'Admin',
+            name: '',
+            email: '',
+            password: '',
+            shopName: '',
+            address: '',
+            contact: '',
+            phone: '',
+          });
+        } else {
+          setError('Failed to add user');
+        }
+      }else{
+      const response = await adminService.addUser(formData);
+      if (response.statusCode === 200) {
+        setSuccess('User successfully added');
+        // Reset form after successful submission
+        setFormData({
+          role: 'Admin',
+          name: '',
+          email: '',
+          password: '',
+          shopName: '',
+          address: '',
+          contact: '',
+          phone: '',
+        });
+      } else {
+        setError('Failed to add user');
+      }
+    }
+    } catch (error) {
+      setError('Failed to add user');
+    }
   };
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md">
       <h2 className="text-2xl font-bold text-[#1E3A8A] mb-6 font-inter">Add User</h2>
+      {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+      {success && <div className="text-green-500 text-center mb-4">{success}</div>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="role" className="block text-sm font-medium text-[#111827] mb-1 font-roboto">

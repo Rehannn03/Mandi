@@ -8,10 +8,19 @@ const api=axios.create({
         'Content-Type':'application/json',
     }
 })
-const token=localStorage.getItem('token');
-if(token){
-    api.defaults.headers.common['Authorization']=`Bearer ${token}`;
-}
+// const token=localStorage.getItem('token');
+// if(token){
+//     api.defaults.headers.common['Authorization']=`Bearer ${token}`;
+// }
+api.interceptors.request.use((config)=>{
+    const token=localStorage.getItem('token');
+    if(token){
+        config.headers['Authorization']=`Bearer ${token}`
+    }
+    return config
+},
+(error)=>{
+    return Promise.reject(error)})
 export const authService={
     login: async(email,password)=>{
         try {
@@ -57,7 +66,27 @@ export const authService={
 export const adminService={
     addUser:async (userData)=>{
         try {
-            const response=await api.post('/user/login',userData)
+            const response=await api.post('/user/addUser',userData)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    addDukaandar:async(data)=>{
+        try {
+           const response=await api.post('/user/addDukaandar',data)
+              if(response.data.statusCode===200){
+                return response.data
+              } 
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    addBepari:async(data)=>{
+        try {
+            const response=await api.post('/user/addBepari',data)
             if(response.data.statusCode===200){
                 return response.data
             }
@@ -125,5 +154,35 @@ export const adminService={
         } catch (error) {
             throw error.response?.data || error
         }
-    }   
+    },
+    getBepari:async()=>{
+        try {
+            const response=await api.get('/user/viewBeparis')
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    getBepariKhata:async(id)=>{
+        try {
+            const response=await api.get(`/bepari/getKhataByBepari/${id}`)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    addKhata:async(data)=>{
+        try {
+            const response=await api.post('/bepari/addKhata',data)
+            if(response.data.statusCode===201){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    }
 }
