@@ -106,7 +106,6 @@ export const adminService={
     },
     getLedgerByDate:async(date)=>{
         try {
-            {console.log(date+'T00:00:00.000+00:00')}
             const response=await api.get(`/ledger/getLedger/${date+'T00:00:00.000+00:00'}`)
             if(response.data.statusCode===200){
                 return response.data
@@ -128,7 +127,7 @@ export const adminService={
     addInflow:async(data)=>{
         try {
             const response=await api.post('/ledger/addInflow',data)
-            if(response.data.statusCode===200){
+            if(response.data.statusCode===201){
                 return response.data
             }
         } catch (error) {
@@ -179,6 +178,26 @@ export const adminService={
         try {
             const response=await api.post('/bepari/addKhata',data)
             if(response.data.statusCode===201){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    getDukaandarDates:async(id)=>{
+        try {
+            const response=await api.get(`/dukaandar/getKhataDates/${id}`)
+            if(response.data.statusCode===200){
+                return response.data
+            }
+        } catch (error) {
+            throw error.response?.data || error
+        }
+    },
+    getBepariDates:async(id)=>{
+        try {
+            const response=await api.get(`/bepari/getKhataDates/${id}`)
+            if(response.data.statusCode===200){
                 return response.data
             }
         } catch (error) {

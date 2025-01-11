@@ -51,6 +51,10 @@ const BakraAdd = () => {
       setValue("ratePerBakra", Math.round(totalAmount / totalBakra));
     }
     setValue("finalAmount", totalAmount);
+    watchOutFlowDetails.forEach((detail, index) => {
+      const totalAmount = Number(detail.quantity) * Number(detail.rate);
+      setValue(`outFlowDetails.${index}.totalAmount`, totalAmount);
+    });
   }, [watchOutFlowDetails, setValue]);
 
   const fetchBeparis = async () => {

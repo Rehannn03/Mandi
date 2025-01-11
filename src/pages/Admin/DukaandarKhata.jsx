@@ -1,16 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router';
-import axios from 'axios';
 import { format, parseISO } from 'date-fns';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp ,X} from 'lucide-react';
 import { adminService } from '../../services/api';
+
+const CustomButton = ({ onClick, children, className }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-md font-semibold text-sm transition-colors duration-200 ${className}`}
+  >
+    {children}
+  </button>
+);
+
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <X size={24} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const PaymentHistoryModal = ({ isOpen, onClose, paymentHistory }) => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Payment History">
+      <div className="mt-4 max-h-96 overflow-y-auto">
+        {paymentHistory.map((payment) => (
+          <div key={payment._id} className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600">Date: {format(parseISO(payment.date), 'MMMM d, yyyy')}</p>
+            <p className="text-lg font-semibold">Amount: ₹{payment.amount.toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
+    </Modal>
+  );
+};
 const DukaandarKhata = () => {
   const { dukaandarId } = useParams();
   const [khataData, setKhataData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedDates, setExpandedDates] = useState({});
-
+  const [isPaymentHistoryOpen, setIsPaymentHistoryOpen] = useState(false);
+  const [selectedPaymentHistory, setSelectedPaymentHistory] = useState([]);
   useEffect(() => {
     fetchKhata();
   }, [dukaandarId]);
@@ -19,7 +61,6 @@ const DukaandarKhata = () => {
     try {
       setLoading(true);
       const response = await adminService.getDukaandarKhata(dukaandarId);
-      {console.log(response)}
       setKhataData(response.message.khata);
       setLoading(false);
     } catch (err) {
@@ -33,6 +74,11 @@ const DukaandarKhata = () => {
       ...prev,
       [date]: !prev[date]
     }));
+  };
+
+  const openPaymentHistory = (paymentHistory) => {
+    setSelectedPaymentHistory(paymentHistory);
+    setIsPaymentHistoryOpen(true);
   };
 
   if (loading) {
@@ -79,15 +125,23 @@ const DukaandarKhata = () => {
             </div>
 
             <div className="space-y-4">
-              <button
-                onClick={() => toggleDateExpansion(khata.date)}
-                className="w-full flex justify-between items-center py-2 px-4 bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors duration-200 rounded-lg"
-              >
-                <span className="text-lg font-semibold text-[#1E3A8A] font-inter">
-                  Purchases
-                </span>
-                {expandedDates[khata.date] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
+              <div className="flex justify-between items-center">
+                <CustomButton
+                  onClick={() => toggleDateExpansion(khata.date)}
+                  className="flex-grow flex justify-between items-center py-2 px-4 bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#1E3A8A] mr-2"
+                >
+                  <span className="text-lg font-semibold font-inter">
+                    Purchases
+                  </span>
+                  {expandedDates[khata.date] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </CustomButton>
+                <CustomButton
+                  onClick={() => openPaymentHistory(khata.datePaid)}
+                  className="bg-[#1E3A8A] text-white hover:bg-[#2563EB]"
+                >
+                  Payment History
+                </CustomButton>
+              </div>
               {expandedDates[khata.date] && (
                 <div className="mt-2 space-y-4">
                   {khata.purchases.map((purchase, purchaseIndex) => (
@@ -124,6 +178,12 @@ const DukaandarKhata = () => {
           </div>
         </div>
       ))}
+
+      <PaymentHistoryModal
+        isOpen={isPaymentHistoryOpen}
+        onClose={() => setIsPaymentHistoryOpen(false)}
+        paymentHistory={selectedPaymentHistory}
+      />
     </div>
   );
 };

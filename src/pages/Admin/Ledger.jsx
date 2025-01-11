@@ -14,13 +14,17 @@ const Ledger = () => {
       const response = await adminService.prevLedger();
       if (response.statusCode === 200) {
         const today = new Date().toISOString().split('T')[0];
-        const ledgerExists = response.message.some(ledger => ledger.date === today);
+        const ledgerExists = response.data.dates.some(dateString => {
+          const ledgerDate = new Date(dateString).toISOString().split('T')[0];
+          return ledgerDate === today;
+        });
         setLedgerExistsToday(ledgerExists);
       }
     } catch (error) {
       console.error('Error checking ledger:', error);
     }
   };
+
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-[#F9FAFB]">
