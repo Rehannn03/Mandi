@@ -44,7 +44,7 @@ const addKhata=asyncHandler(async(req,res)=>{
         },{
             new:true
         })
-        console.log(dukaandar)
+        await dukaandar.save()
         if(!dukaandar){
             return next(new ApiError(404,"Dukaandar not found"))
         }
@@ -154,6 +154,9 @@ const getKhataByBepari=asyncHandler(async(req,res)=>{
                 },
                 balance: {
                   $first: "$balance"
+                },
+                datePaid:{
+                  $first:'$datePaid'
                 }
               }
             }
@@ -186,7 +189,16 @@ const makeAkda=asyncHandler(async(req,res)=>{
     }
 })
 
+const getKhataDates=asyncHandler(async(req,res)=>{
+  const {bepariId}=req.params
+
+  const khataDates=await Kb_bepari.find({bepariId}).distinct('date')
+  return res.status(200).json(new ApiResponse(200,{khataDates},"Khata Dates fetched successfully"))
+})
+
 export {addKhata,
     getKhata,
-    getKhataByBepari
+    getKhataByBepari,
+    makeAkda,
+    getKhataDates
 }

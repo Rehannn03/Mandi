@@ -58,7 +58,8 @@ const getKhataByDukaandar=asyncHandler(async(req,res)=>{
       },
       totalAmount:{$first:'$totalAmount'},
       paidAmount:{$first:'$paidAmount'},
-      balance:{$first:'$balance'}
+      balance:{$first:'$balance'},
+      datePaid:{$first:'$datePaid'},
     }
   }
     ])
@@ -94,8 +95,21 @@ const updateKhata=asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,"Khata updated",{khata}))
 })
 
+const getKhataDates=asyncHandler(async(req,res)=>{
+    const {dukaandarId}=req.params
+
+    const khataDates=await Kb_dukaandar.find({dukaandarId}).distinct('date')
+
+    if(!khataDates){
+        return next(new ApiError(404,"Khata Dates not found"))
+    }
+
+    return res.status(200).json(new ApiResponse(200,{khataDates},"Khata Dates found"))
+})
+
 export {
     getKhataByDate,
     getKhataByDukaandar,
-    updateKhata
+    updateKhata,
+    getKhataDates
 }

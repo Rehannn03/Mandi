@@ -31,6 +31,16 @@ const kb_dukaandarSchema = new mongoose.Schema({
             }
         }
     ],
+    datePaid:[{
+        date: {
+            type: Date,
+            required: true
+        },
+        amount: {
+            type: Number,
+            required: true
+        }
+    }],
     totalAmount: {
         type: Number,
         required: true

@@ -38,6 +38,16 @@ const kb_bepariSchema = new mongoose.Schema({
             }
         }
     ],
+    datePaid:[{
+        date: {
+            type: Date,
+            required: true
+        },
+        amount: {
+            type: Number,
+            required: true
+        }
+    }],
     reaminingBakra: {
         type: Number
     },
