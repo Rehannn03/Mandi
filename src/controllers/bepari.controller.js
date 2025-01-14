@@ -176,6 +176,7 @@ const makeAkda=asyncHandler(async(req,res)=>{
     const bepariMischellanous=ledger.transactions.filter(
         item=>item.relatedTo==='Bepari'&&item.partyId.toString()===bepariId.toString()&&item.type==='outflow' || item.relatedTo==='Gawali'&&item.partyId.toString()===bepariId.toString()&&item.type==='outflow' || item.relatedTo==='Bhada'&&item.partyId.toString()===bepariId.toString()&&item.type==='outflow'
     )
+    console.log(bepariMischellanous)
     if(!khata){
         return next(new ApiError(404,"Khata not found"))
     }
@@ -185,7 +186,14 @@ const makeAkda=asyncHandler(async(req,res)=>{
         bepariAddress:bepari.address,
         bepariAmount:khata.finalAmount,
         givenAmount:khata.paidAmount,
-        commision:commision
+        commision:commision,
+        kasar:kasar,
+        kalamfer:kalamfer,
+        jagaBhada:jagaBhada,
+        motorBhada:motorBhada,
+        gawali:gawali,
+        charaBhusa:charaBhusa,
+        majdoori:majdoori,
     }
 })
 

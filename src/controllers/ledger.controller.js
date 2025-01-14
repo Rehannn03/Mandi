@@ -43,20 +43,20 @@ const addTransaction = (
 };
 
 const handleRelatedEntityUpdate = async (
+  date,
   relatedTo,
   partyId,
   amount,
   dateOfEntity
 ) => {
   amount=parseInt(amount);
-  console.log(relatedTo, partyId, amount, dateOfEntity);
   let entity, entityUpdate;
   if (relatedTo === "Dukaandar") {
     entity = await Kb_dukaandar.findOneAndUpdate(
       { date: dateOfEntity, dukaandarId: partyId },
       {
         $inc: { paidAmount: amount, balance: -amount },
-        $push: { datePaid: { date: dateOfEntity, amount } },
+        $push: { datePaid: { date: date, amount } },
       },
       { new: true }
     );
@@ -69,7 +69,8 @@ const handleRelatedEntityUpdate = async (
   } else if (relatedTo === "Bepari") {
     entity = await Kb_bepari.findOneAndUpdate(
       { date: dateOfEntity, bepariId: partyId },
-      { $inc: { paidAmount: amount, balance: -amount } },
+      { $inc: { paidAmount: amount, balance: -amount },
+        $push: { datePaid: { date: date, amount } }},
       { new: true }
     );
     if (!entity) throw new ApiError(404, "Bepari not found");
@@ -114,6 +115,7 @@ const addInflow = asyncHandler(async (req, res) => {
 
   if (relatedTo === "Dukaandar") {
     const dukaandar = await handleRelatedEntityUpdate(
+      date,
       relatedTo,
       partyId,
       amount,
