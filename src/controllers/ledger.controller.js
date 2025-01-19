@@ -7,6 +7,7 @@ import Kb_bepari from "../model/khaataBook_bepari.model.js";
 import Dukaandar from "../model/dukaandar.model.js";
 import Bepari from "../model/bepari.model.js";
 import mongoose from "mongoose";
+import Akda from "../model/akda.model.js";
 const ObjectId=mongoose.Types.ObjectId
 const addTransaction = (
   ledger,
@@ -50,7 +51,7 @@ const handleRelatedEntityUpdate = async (
   dateOfEntity
 ) => {
   amount=parseInt(amount);
-  let entity, entityUpdate;
+  let entity, entityUpdate,akdaUpdate;
   if (relatedTo === "Dukaandar") {
     entity = await Kb_dukaandar.findOneAndUpdate(
       { date: dateOfEntity, dukaandarId: partyId },
@@ -66,7 +67,7 @@ const handleRelatedEntityUpdate = async (
       { $inc: { balance: -amount } },
       { new: true }
     );
-  } else if (relatedTo === "Bepari") {
+  } else if (relatedTo === "Bepari" || relatedTo === "Gawali" || relatedTo === "Bhada") {
     entity = await Kb_bepari.findOneAndUpdate(
       { date: dateOfEntity, bepariId: partyId },
       { $inc: { paidAmount: amount, balance: -amount },
@@ -79,6 +80,11 @@ const handleRelatedEntityUpdate = async (
       { $inc: { balance: -amount } },
       { new: true }
     );
+    akdaUpdate=await Akda.findOneAndUpdate(
+      { date: dateOfEntity, bepariId: partyId },
+      { $inc: { paidAmount: amount, balance: -amount }},
+      { new: true }
+    )
   }
   return entity;
 };
