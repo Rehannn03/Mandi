@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { adminService } from '../../services/api';
-import { Link } from 'react-router';
-import { Search } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { adminService } from "../../services/api";
+import { Link } from "react-router";
+import { Search } from "lucide-react";
 
 const Dukaandar = () => {
   const [dukaandars, setDukaandars] = useState([]);
   const [filteredDukaandars, setFilteredDukaandars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -17,9 +17,10 @@ const Dukaandar = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = dukaandars.filter(dukaandar => 
-      dukaandar.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      dukaandar.shopName.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = dukaandars.filter(
+      (dukaandar) =>
+        dukaandar.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dukaandar.shopName.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredDukaandars(filtered);
     setCurrentPage(1);
@@ -29,12 +30,14 @@ const Dukaandar = () => {
     try {
       setLoading(true);
       const response = await adminService.getDukaandar();
-      const sortedDukaandars = response.message.sort((a, b) => a.name.localeCompare(b.name));
+      const sortedDukaandars = response.message.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
       setDukaandars(sortedDukaandars);
       setFilteredDukaandars(sortedDukaandars);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch Dukaandars');
+      setError("Failed to fetch Dukaandars");
       setLoading(false);
     }
   };
@@ -45,7 +48,10 @@ const Dukaandar = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredDukaandars.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredDukaandars.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -58,7 +64,9 @@ const Dukaandar = () => {
             key={i}
             onClick={() => paginate(i + 1)}
             className={`mx-1 px-3 py-1 rounded ${
-              currentPage === i + 1 ? 'bg-[#1E3A8A] text-white' : 'bg-[#E5E7EB] text-[#1E3A8A]'
+              currentPage === i + 1
+                ? "bg-[#1E3A8A] text-white"
+                : "bg-[#E5E7EB] text-[#1E3A8A]"
             }`}
           >
             {i + 1}
@@ -77,67 +85,116 @@ const Dukaandar = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-[#F9FAFB]">
-      <nav aria-label="breadcrumb" className="mb-4">
-        <ol className="flex space-x-2 text-sm font-roboto">
-          <li><Link to="/admin" className="text-[#1E3A8A] hover:text-[#2563EB]">Admin</Link></li>
+    <div className="max-w-7xl mx-auto p-8 bg-gradient-to-b from-[#F9FAFB] to-white min-h-screen">
+      {/* Enhanced Breadcrumb with better spacing and transitions */}
+      <nav aria-label="breadcrumb" className="mb-6">
+        <ol className="flex items-center space-x-3 text-sm font-roboto">
+          <li>
+            <Link
+              to="/admin"
+              className="text-[#1E3A8A] hover:text-[#2563EB] transition-colors duration-200 flex items-center"
+            >
+              <span className="hover:underline">Admin</span>
+            </Link>
+          </li>
           <li className="text-[#6B7280]">/</li>
-          <li className="text-[#111827]" aria-current="page">Dukaandars</li>
+          <li className="text-[#111827] font-medium" aria-current="page">
+            Dukaandars
+          </li>
         </ol>
       </nav>
 
-      <h1 className="text-3xl font-bold text-[#1E3A8A] mb-6 font-inter">Dukaandars</h1>
+      {/* Enhanced Header with subtle animation */}
+      <h1 className="text-4xl font-bold text-[#1E3A8A] mb-8 font-inter animate-fade-in">
+        Dukaandars Directory
+      </h1>
 
-      <div className="mb-6 relative">
+      {/* Enhanced Search with better visual feedback */}
+      <div className="mb-8 relative group">
         <input
           type="text"
-          placeholder="Search Dukaandars..."
+          placeholder="Search by name or shop name..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="w-full px-4 py-2 pl-10 border border-[#E5E7EB] rounded-md focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] transition-all duration-300 font-roboto"
+          className="w-full px-4 py-3 pl-12 border-2 border-[#E5E7EB] rounded-lg
+                   focus:outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20
+                   transition-all duration-300 font-roboto text-lg"
         />
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#6B7280]" size={20} />
+        <Search
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#6B7280]
+                          group-hover:text-[#1E3A8A] transition-colors duration-200"
+          size={22}
+        />
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-[#E5E7EB]">
-          <thead className="bg-[#F3F4F6]">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-[#111827] uppercase tracking-wider font-roboto">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-[#111827] uppercase tracking-wider font-roboto">Shop Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-[#111827] uppercase tracking-wider font-roboto">Address</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-[#111827] uppercase tracking-wider font-roboto">Contact</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-[#111827] uppercase tracking-wider font-roboto">Balance</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-[#E5E7EB]">
-            {currentItems.map((dukaandar) => (
-              <tr key={dukaandar._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{dukaandar.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{dukaandar.shopName}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{dukaandar.address}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#111827] font-roboto">{dukaandar.contact}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#16A34A] font-roboto">
-                  ₹{dukaandar.balance.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium font-roboto">
-                  <Link
-                    to={`/admin/khaatas/dukaandar/${dukaandar._id}`}
-                    className="text-[#1E3A8A] hover:text-[#2563EB] bg-[#E5E7EB] hover:bg-[#D1D5DB] px-3 py-2 rounded-md transition-colors duration-200"
+      {/* Enhanced Table Container */}
+      <div
+        className="bg-white rounded-xl shadow-lg overflow-hidden border border-[#E5E7EB]
+                    transform transition-all duration-300 hover:shadow-xl"
+      >
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-[#E5E7EB]">
+            <thead className="bg-[#F8FAFC]">
+              <tr>
+                {[
+                  "Name",
+                  "Shop Name",
+                  "Address",
+                  "Contact",
+                  "Balance",
+                  "Actions",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className="px-6 py-4 text-left text-xs font-semibold text-[#1E3A8A] 
+                                            uppercase tracking-wider font-roboto"
                   >
-                    View Khata
-                  </Link>
-                </td>
+                    {header}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-[#E5E7EB]">
+              {currentItems.map((dukaandar) => (
+                <tr
+                  key={dukaandar._id}
+                  className="hover:bg-[#F8FAFC] transition-colors duration-200"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#111827] font-roboto">
+                    {dukaandar.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B5563] font-roboto">
+                    {dukaandar.shopName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B5563] font-roboto">
+                    {dukaandar.address}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B5563] font-roboto">
+                    {dukaandar.contact}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#16A34A] font-roboto">
+                    ₹{dukaandar.balance.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium font-roboto">
+                    <Link
+                      to={`/admin/khaatas/dukaandar/${dukaandar._id}`}
+                      className="inline-flex items-center px-4 py-2 bg-[#1E3A8A] text-white rounded-lg
+                               hover:bg-[#2563EB] transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      View Khata
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {renderPagination()}
+      {/* Enhanced Pagination */}
+      <div className="mt-8">{renderPagination()}</div>
     </div>
   );
 };
 
 export default Dukaandar;
-
