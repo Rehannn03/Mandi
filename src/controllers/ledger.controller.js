@@ -67,7 +67,7 @@ const handleRelatedEntityUpdate = async (
       { $inc: { balance: -amount } },
       { new: true }
     );
-  } else if (relatedTo === "Bepari" || relatedTo === "Gawali" || relatedTo === "Bhada") {
+  } else if (relatedTo === "Bepari" ) {
     entity = await Kb_bepari.findOneAndUpdate(
       { date: dateOfEntity, bepariId: partyId },
       { $inc: { paidAmount: amount, balance: -amount },
@@ -85,6 +85,22 @@ const handleRelatedEntityUpdate = async (
       { $inc: { paidAmount: amount, balance: -amount }},
       { new: true }
     )
+  } else if(relatedTo==='Gawali'){
+      akdaUpdate=await Akda.findOneAndUpdate(
+        { date: dateOfEntity, bepariId: partyId },
+        {$push:{kharchaDetails:{[mandiGawali]:amount}},
+        $inc: { totalKharcha: amount,balance: -amount }},
+        { new: true }
+      )
+  } else if(relatedTo==='Bhada'){
+    akdaUpdate=await Akda.findOneAndUpdate({
+      date: dateOfEntity, bepariId: partyId
+    },{
+      $push:{kharchaDetails:{[motorBhada]:amount}},
+      $inc: { totalKharcha: amount,balance: -amount }
+    },{
+      new: true
+    })
   }
   return entity;
 };
