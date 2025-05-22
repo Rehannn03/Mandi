@@ -303,7 +303,7 @@ const BepariKhata = () => {
                   )}
                 </button>
                 <button
-                  onClick={() => openPaymentHistory(khata.paymentHistory || [])}
+                  onClick={() => openPaymentHistory(khata.datePaid || [])}
                   className="px-6 py-3 bg-[#1E3A8A] text-white rounded-lg hover:bg-[#2563EB] transition-all duration-200 flex items-center font-medium"
                 >
                   <HistoryIcon className="w-5 h-5 mr-2" />

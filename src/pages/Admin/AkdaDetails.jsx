@@ -1,92 +1,10 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import {
-  Save,
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  Printer,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Printer, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import AkdaInvoicePreview from "./AkdaPreview";
+import { adminService } from "../../services/api";
 // import { toast } from "react-hot-toast";
-
-const CustomButton = ({
-  onClick,
-  children,
-  className,
-  isLoading,
-  icon: Icon,
-}) => (
-  <button
-    onClick={onClick}
-    disabled={isLoading}
-    className={`px-4 py-2 rounded-md font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-  >
-    {isLoading ? (
-      <Loader2 className="animate-spin" size={18} />
-    ) : (
-      Icon && <Icon size={18} />
-    )}
-    {children}
-  </button>
-);
-
-const InputField = ({
-  label,
-  name,
-  value,
-  onChange,
-  type = "text",
-  disabled = false,
-  error,
-  helperText,
-}) => (
-  <div className="mb-4">
-    <label
-      htmlFor={name}
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
-      {label}
-    </label>
-    <div className="relative">
-      <input
-        type={type}
-        id={name}
-        name={name}
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        className={`w-full px-3 py-2 border ${
-          disabled ? "bg-gray-50" : "bg-white"
-        } ${
-          error
-            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-        } rounded-md focus:outline-none focus:ring-2 transition-colors duration-200`}
-      />
-      {error && (
-        <AlertCircle
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500"
-          size={18}
-        />
-      )}
-    </div>
-    {helperText && (
-      <p className={`mt-1 text-sm ${error ? "text-red-600" : "text-gray-500"}`}>
-        {helperText}
-      </p>
-    )}
-  </div>
-);
-
-const SectionHeader = ({ title, icon: Icon }) => (
-  <div className="flex items-center gap-2 mb-4">
-    {Icon && <Icon className="text-[#1E3A8A]" size={20} />}
-    <h2 className="text-xl font-semibold text-[#1E3A8A]">{title}</h2>
-  </div>
-);
 
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
@@ -122,6 +40,11 @@ const Modal = ({ isOpen, onClose, children }) => {
 };
 
 const AkdaDetails = () => {
+  const location = useLocation();
+  const pathSegments = location.pathname.split("/");
+  const id = pathSegments[pathSegments.length - 2]; // Second to last segment
+  const date = pathSegments[pathSegments.length - 1]; // Last segment
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -150,124 +73,124 @@ const AkdaDetails = () => {
       phone: "",
     },
   });
+  const [initialBalance, setInitialBalance] = useState(0);
 
-  // Fetch invoice data
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
         setLoading(true);
-        // Simulating API call with setTimeout
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock data based on the provided JSON
-        const mockInvoice = {
-          _id: "67952e2c536b03db82eed85c",
-          bepariId: "6773f20570c1d8732dbf62cc",
-          totalBakra: 15,
-          date: "2025-01-26T00:00:00.000Z",
-          kharchaDetails: {
-            commision: 200,
-            kasar: 50,
-            kalamFare: 20,
-            jagaBhada: 1000,
-            motorBhada: 15000,
-            karkoni: 0,
-            mandiGawali: 1000,
-            charaBhusa: 0,
-            mazdoori: 0,
-          },
-          totalKharcha: 17270, // Updated to match the screenshot
-          paidAmount: 50000,
-          balance: 32730, // Updated to match the screenshot
-          bepari: {
-            name: "Bepari_4",
-            address: "Add4",
-            phone: "12345",
-          },
+        const response = await adminService.getAkda(id, date);
+        const akdaData = response.data.akda[0];
+        // Transform the data to match our state structure
+        const transformedData = {
+          _id: akdaData._id,
+          bepariId: akdaData.bepariId,
+          totalBakra: akdaData.totalBakra,
+          date: akdaData.date,
+          kharchaDetails: akdaData.kharchaDetails[0],
+          totalKharcha: akdaData.totalKharcha || 0,
+          paidAmount: akdaData.paidAmount || 0,
+          balance: akdaData.balance || 0,
+          bepari: akdaData.bepari[0],
+          settled: akdaData.settled,
         };
 
-        setInvoice(mockInvoice);
+        // Store the initial balance
+        setInitialBalance(akdaData.balance || 0);
+        console.log("Initial Balance Set:", akdaData.balance || 0);
+
+        console.log("Transformed Data:", transformedData);
+        setInvoice(transformedData);
         setLoading(false);
       } catch (err) {
+        console.error("Error fetching invoice:", err);
         setError("Failed to fetch invoice");
         setLoading(false);
       }
     };
 
-    fetchInvoice();
-  }, []);
+    if (id && date) {
+      fetchInvoice();
+    }
+  }, [id, date]);
+
+  const handleKharchaChange = (e) => {
+    const { name, value } = e.target;
+    const numValue = Number.parseFloat(value) || 0;
+
+    // Update kharcha details
+    const updatedKharchaDetails = {
+      ...invoice.kharchaDetails,
+      [name]: numValue,
+    };
+
+    // Calculate new total immediately
+    const newTotal = Object.values(updatedKharchaDetails).reduce(
+      (sum, value) => sum + (Number.parseFloat(value) || 0),
+      0
+    );
+
+    // Update the entire invoice state with new values
+    setInvoice((prev) => ({
+      ...prev,
+      kharchaDetails: updatedKharchaDetails,
+      totalKharcha: newTotal,
+      balance: initialBalance - newTotal,
+    }));
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
-      setInvoice({
-        ...invoice,
-        [parent]: {
-          ...invoice[parent],
-          [child]: value,
-        },
-      });
-    } else {
-      setInvoice({
-        ...invoice,
-        [name]: value,
-      });
-    }
-  };
-
-  const handleKharchaChange = (e) => {
-    const { name, value } = e.target;
-    const numValue = Number.parseFloat(value) || 0;
-
-    setInvoice({
-      ...invoice,
-      kharchaDetails: {
-        ...invoice.kharchaDetails,
-        [name]: numValue,
-      },
-    });
-  };
-
-  const calculateTotalKharcha = () => {
-    const { kharchaDetails } = invoice;
-    return Object.values(kharchaDetails).reduce(
-      (sum, value) => sum + (Number.parseFloat(value) || 0),
-      0
-    );
-  };
-
-  const calculateBalance = () => {
-    return invoice.paidAmount - calculateTotalKharcha();
-  };
-
-  useEffect(() => {
-    if (!loading) {
-      const totalKharcha = calculateTotalKharcha();
-      const balance = calculateBalance();
-
       setInvoice((prev) => ({
         ...prev,
-        totalKharcha,
-        balance,
+        [parent]: {
+          ...prev[parent],
+          [child]: value,
+        },
+      }));
+    } else {
+      setInvoice((prev) => ({
+        ...prev,
+        [name]: value,
       }));
     }
-  }, [invoice.kharchaDetails, invoice.paidAmount, loading]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert("Invoice updated successfully!");
+      // Transform the data to match the required API structure
+      const apiData = {
+        commision: invoice.kharchaDetails.commision,
+        kasar: invoice.kharchaDetails.kasar,
+        kalamFare: invoice.kharchaDetails.kalamFare,
+        jagaBhada: invoice.kharchaDetails.jagaBhada,
+        motorBhada: invoice.kharchaDetails.motorBhada,
+        karkoni: invoice.kharchaDetails.karkoni,
+        mandiGawali: invoice.kharchaDetails.mandiGawali,
+        charaBhusa: invoice.kharchaDetails.charaBhusa,
+        mazdoori: invoice.kharchaDetails.mazdoori,
+        bepariId: invoice.bepariId,
+        date: invoice.date,
+        totalKharcha: invoice.totalKharcha,
+        paidAmount: invoice.paidAmount,
+        balance: invoice.balance,
+      };
+
+      const response = await adminService.updateAkda(apiData);
+      if (response == "Success") {
+        alert("Updated Successfully");
+      }
     } catch (err) {
       setError("Failed to update invoice");
     }
   };
 
   const handleBack = () => {
-    alert("Back button clicked - would navigate back to invoice list");
+    window.history.back();
   };
 
   const handlePrint = () => {
@@ -284,11 +207,40 @@ const AkdaDetails = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${month}/${day}/${year}`;
+    try {
+      return format(new Date(dateString), "yyyy-MM-dd");
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const calculateTotalKharcha = () => {
+    const { kharchaDetails } = invoice;
+    // Only sum the specific kharcha fields
+    const kharchaFields = [
+      "commision",
+      "kasar",
+      "kalamFare",
+      "jagaBhada",
+      "motorBhada",
+      "karkoni",
+      "mandiGawali",
+      "charaBhusa",
+      "mazdoori",
+    ];
+
+    const total = kharchaFields.reduce(
+      (sum, field) => sum + (Number.parseFloat(kharchaDetails[field]) || 0),
+      0
+    );
+    console.log("Calculated Total Kharcha:", total);
+    return total;
+  };
+
+  const calculateBalance = () => {
+    const totalKharcha = calculateTotalKharcha();
+    const balance = initialBalance - totalKharcha;
+    return balance;
   };
 
   if (loading) {
@@ -604,7 +556,7 @@ const AkdaDetails = () => {
                 <input
                   type="number"
                   name="totalKharcha"
-                  value={invoice.totalKharcha}
+                  value={calculateTotalKharcha()}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                 />
@@ -621,9 +573,12 @@ const AkdaDetails = () => {
                   type="number"
                   name="paidAmount"
                   value={invoice.paidAmount}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Amount paid from database
+                </p>
               </div>
 
               <div className="mb-4">
@@ -633,7 +588,7 @@ const AkdaDetails = () => {
                 <input
                   type="number"
                   name="balance"
-                  value={invoice.balance}
+                  value={calculateBalance()}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                 />

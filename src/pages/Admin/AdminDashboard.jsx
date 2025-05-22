@@ -45,16 +45,6 @@ function AdminDashboard() {
       icon: CirclePlus,
       link: "/admin/addBakra",
     },
-    {
-      name: "Akda",
-      icon: Receipt,
-      link: "/admin/akda",
-    },
-    {
-      name: "Akda Details",
-      icon: Receipt,
-      link: "/admin/akdaDetail",
-    },
   ];
 
   const toggleMobileMenu = () => {

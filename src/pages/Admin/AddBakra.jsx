@@ -49,13 +49,14 @@ const BakraAdd = () => {
 
   useEffect(() => {
     const totalBakra = watchOutFlowDetails.reduce(
-      (sum, detail) => sum + Number(detail.quantity),
+      (sum, detail) => sum + Number(detail.quantity || 0),
       0
     );
     setValue("totalBakra", totalBakra);
 
     const totalAmount = watchOutFlowDetails.reduce(
-      (sum, detail) => sum + Number(detail.quantity) * Number(detail.rate),
+      (sum, detail) =>
+        sum + Number(detail.quantity || 0) * Number(detail.rate || 0),
       0
     );
     if (totalBakra > 0) {
@@ -63,7 +64,8 @@ const BakraAdd = () => {
     }
     setValue("finalAmount", totalAmount);
     watchOutFlowDetails.forEach((detail, index) => {
-      const totalAmount = Number(detail.quantity) * Number(detail.rate);
+      const totalAmount =
+        Number(detail.quantity || 0) * Number(detail.rate || 0);
       setValue(`outFlowDetails.${index}.totalAmount`, totalAmount);
     });
   }, [watchOutFlowDetails, setValue]);
@@ -242,21 +244,6 @@ const BakraAdd = () => {
               <h2 className="text-lg font-semibold text-[#1E3A8A] font-inter">
                 Outflow Details
               </h2>
-              <button
-                type="button"
-                onClick={() =>
-                  append({
-                    dukaandarId: "",
-                    quantity: 0,
-                    rate: 0,
-                    totalAmount: 0,
-                    notes: "",
-                  })
-                }
-                className="inline-flex items-center px-4 py-2 text-sm bg-[#1E3A8A] text-white rounded-lg hover:bg-[#2563EB] transition-all duration-200 shadow-sm"
-              >
-                <Plus size={16} className="mr-2" /> Add Dukaandar
-              </button>
             </div>
 
             {/* Outflow Items */}
@@ -311,6 +298,15 @@ const BakraAdd = () => {
                       {...register(`outFlowDetails.${index}.quantity`, {
                         required: "Quantity is required",
                         min: 1,
+                        onChange: (e) => {
+                          const value = e.target.value;
+                          const rate =
+                            watch(`outFlowDetails.${index}.rate`) || 0;
+                          setValue(
+                            `outFlowDetails.${index}.totalAmount`,
+                            value * rate
+                          );
+                        },
                       })}
                       className="w-full px-4 py-2.5 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] transition-all duration-200 font-roboto bg-white"
                     />
@@ -333,6 +329,15 @@ const BakraAdd = () => {
                       {...register(`outFlowDetails.${index}.rate`, {
                         required: "Rate is required",
                         min: 1,
+                        onChange: (e) => {
+                          const value = e.target.value;
+                          const quantity =
+                            watch(`outFlowDetails.${index}.quantity`) || 0;
+                          setValue(
+                            `outFlowDetails.${index}.totalAmount`,
+                            value * quantity
+                          );
+                        },
                       })}
                       className="w-full px-4 py-2.5 border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] transition-all duration-200 font-roboto bg-white"
                     />
@@ -384,6 +389,23 @@ const BakraAdd = () => {
                 )}
               </div>
             ))}
+
+            {/* Add Dukaandar Button - Now at the bottom */}
+            <button
+              type="button"
+              onClick={() =>
+                append({
+                  dukaandarId: "",
+                  quantity: 0,
+                  rate: 0,
+                  totalAmount: 0,
+                  notes: "",
+                })
+              }
+              className="w-full mt-4 inline-flex items-center justify-center px-4 py-3 text-sm bg-[#1E3A8A] text-white rounded-lg hover:bg-[#2563EB] transition-all duration-200 shadow-sm"
+            >
+              <Plus size={16} className="mr-2" /> Add Dukaandar
+            </button>
           </div>
 
           {/* Summary Section */}

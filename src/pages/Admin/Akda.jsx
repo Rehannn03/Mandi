@@ -19,10 +19,8 @@ function Akda() {
   const fetchAkdaDates = async () => {
     try {
       setLoading(true);
-      console.log(id);
       const response = await adminService.getAkdaDates(id);
       const dates = response.data.akdaDates;
-      console.log(dates);
       const organizedDates = organizeDates(dates);
       setAkdaDates(organizedDates);
       setLoading(false);
@@ -98,7 +96,9 @@ function Akda() {
       .map((date) => (
         <Link
           key={date.toISOString()}
-          to={`/admin/akda/${id}/${date.toISOString().split("T")[0]}`}
+          to={`/admin/khaatas/bepari/akda/${id}/${
+            date.toISOString().split("T")[0]
+          }`}
           className="block w-full text-left px-4 py-2 hover:bg-[#F3F4F6] transition duration-150 ease-in-out"
         >
           {date.toLocaleDateString()}

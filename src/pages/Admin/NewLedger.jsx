@@ -140,19 +140,6 @@ const NewLedger = () => {
           ? await adminService.addInflow(submissionData)
           : await adminService.addOutflow(submissionData);
 
-      // const newTransaction =
-      //   response.data.ledger[0].transactions[
-      //     response.data.ledger[0].transactions.length - 1
-      //   ];
-      // setTransactions((prevTransactions) => [
-      //   ...prevTransactions,
-      //   newTransaction,
-      // ]);
-      // setLedgerSummary({
-      //   totalInflow: response.data.ledger[0].totalInflow,
-      //   totalOutflow: response.data.ledger[0].totalOutflow,
-      //   balance: response.data.ledger[0].balance,
-      // });
       await fetchTransactions();
       setFormData({
         date: getTodayDate(),
@@ -170,6 +157,8 @@ const NewLedger = () => {
     } catch (err) {
       console.error("Error submitting transaction:", err);
       setError(err.response?.data?.message || "Failed to add transaction");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 

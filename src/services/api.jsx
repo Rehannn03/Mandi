@@ -220,4 +220,24 @@ export const adminService = {
       throw error.response?.data || error;
     }
   },
+  getAkda: async (id, date) => {
+    try {
+      const response = await api.get(`/bepari/getAkda/${id}/${date}`);
+      if (response.data.statusCode === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  updateAkda: async (data) => {
+    try {
+      const response = await api.put("/bepari/updateAkda", data);
+      if (response.data.statusCode === 200) {
+        return "Success";
+      }
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
 };

@@ -52,7 +52,6 @@ function App() {
               <Route path="/admin/newLedger" element={<NewLedger />} />
               <Route path="/admin/resumeLedger" element={<NewLedger />} />
               <Route path="/admin/prevLedger" element={<PreviousLedgers />} />
-              <Route path="/admin/akdaDetail" element={<AkdaDetails />} />
               <Route
                 path="/admin/prevLedger/:date"
                 element={<LedgerDetail />}
@@ -69,11 +68,14 @@ function App() {
                 element={<BepariKhata />}
               />
               <Route
+                path="/admin/khaatas/bepari/akda/:bepariId/:date"
+                element={<AkdaDetails />}
+              />
+              <Route
                 path="/admin/khaatas/bepari/akda/:bepariId"
                 element={<Akda />}
               />
               <Route path="/admin/addBakra" element={<AddBakra />} />
-              <Route path="/admin/akda" element={<Akda />} />
             </Route>
           </Routes>
         </AuthProvider>
