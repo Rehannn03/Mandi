@@ -180,6 +180,35 @@ const pattiGeneration = asyncHandler(async (req, res) => {
     })
   );
 });
+
+const totalAkdas = asyncHandler(async (req, res) => {
+  const akdas = await Akda.find({}).countDocuments();
+  if (!akdas) {
+    throw new ApiError(404, "Akdas not found");
+  }
+
+  return res.json(new ApiResponse(200, "Akdas found successfully", akdas));
+});
+
+const totalSettled = asyncHandler(async (req, res) => {
+  const settled = await Akda.find({ settled: true }).countDocuments();
+  if (!settled) {
+    throw new ApiError(404, "Settled not found");
+  }
+
+  return res.json(new ApiResponse(200, "Settled found successfully", settled));
+});
+
+const totalUnsettled = asyncHandler(async (req, res) => {
+  const unsettled = await Akda.find({ settled: false }).countDocuments();
+  if (!unsettled) {
+    throw new ApiError(404, "Unsettled not found");
+  }
+
+  return res.json(
+    new ApiResponse(200, "Unsettled found successfully", unsettled)
+  );
+});
 export {
   addUser,
   loginUser,
@@ -191,4 +220,7 @@ export {
   viewBeparis,
   viewBepariById,
   pattiGeneration,
+  totalAkdas,
+  totalSettled,
+  totalUnsettled,
 };

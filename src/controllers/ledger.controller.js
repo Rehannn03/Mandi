@@ -8,7 +8,7 @@ import Dukaandar from "../model/dukaandar.model.js";
 import Bepari from "../model/bepari.model.js";
 import mongoose from "mongoose";
 import Akda from "../model/akda.model.js";
-const ObjectId=mongoose.Types.ObjectId
+const ObjectId = mongoose.Types.ObjectId;
 const addTransaction = (
   ledger,
   type,
@@ -18,7 +18,7 @@ const addTransaction = (
   method,
   notes
 ) => {
-    amount = parseInt(amount);
+  amount = parseInt(amount);
   ledger.transactions.push({
     type,
     relatedTo,
@@ -50,8 +50,13 @@ const handleRelatedEntityUpdate = async (
   amount,
   dateOfEntity
 ) => {
-  amount=parseInt(amount);
-  let entity, entityUpdate,akdaUpdate;
+  amount = parseInt(amount);
+  console.log(dateOfEntity);
+  console.log(date);
+  console.log(relatedTo);
+  console.log(partyId);
+  console.log(amount);
+  let entity, entityUpdate, akdaUpdate;
   if (relatedTo === "Dukaandar") {
     entity = await Kb_dukaandar.findOneAndUpdate(
       { date: dateOfEntity, dukaandarId: partyId },
@@ -67,11 +72,13 @@ const handleRelatedEntityUpdate = async (
       { $inc: { balance: -amount } },
       { new: true }
     );
-  } else if (relatedTo === "Bepari" ) {
+  } else if (relatedTo === "Bepari") {
     entity = await Kb_bepari.findOneAndUpdate(
       { date: dateOfEntity, bepariId: partyId },
-      { $inc: { paidAmount: amount, balance: -amount },
-        $push: { datePaid: { date: date, amount } }},
+      {
+        $inc: { paidAmount: amount, balance: -amount },
+        $push: { datePaid: { date: date, amount } },
+      },
       { new: true }
     );
     if (!entity) throw new ApiError(404, "Bepari not found");
@@ -80,27 +87,40 @@ const handleRelatedEntityUpdate = async (
       { $inc: { balance: -amount } },
       { new: true }
     );
-    akdaUpdate=await Akda.findOneAndUpdate(
+    akdaUpdate = await Akda.findOneAndUpdate(
       { date: dateOfEntity, bepariId: partyId },
-      { $inc: { paidAmount: amount, balance: -amount }},
+      { $inc: { paidAmount: amount, balance: -amount } },
       { new: true }
-    )
-  } else if(relatedTo==='Gawali'){
-      akdaUpdate=await Akda.findOneAndUpdate(
-        { date: dateOfEntity, bepariId: partyId },
-        {$push:{kharchaDetails:{[mandiGawali]:amount}},
-        $inc: { totalKharcha: amount,balance: -amount }},
-        { new: true }
-      )
-  } else if(relatedTo==='Bhada'){
-    akdaUpdate=await Akda.findOneAndUpdate({
-      date: dateOfEntity, bepariId: partyId
-    },{
-      $push:{kharchaDetails:{[motorBhada]:amount}},
-      $inc: { totalKharcha: amount,balance: -amount }
-    },{
-      new: true
-    })
+    );
+  } else if (relatedTo === "Gawali") {
+    akdaUpdate = await Akda.findOneAndUpdate(
+      { date: dateOfEntity, bepariId: partyId },
+      {
+        $inc: {
+          "kharchaDetails.0.mandiGawali": amount,
+          totalKharcha: amount,
+          balance: -amount,
+        },
+      },
+      { new: true }
+    );
+  } else if (relatedTo === "Bhada") {
+    akdaUpdate = await Akda.findOneAndUpdate(
+      {
+        date: dateOfEntity,
+        bepariId: partyId,
+      },
+      {
+        $inc: {
+          "kharchaDetails.0.motorBhada": amount,
+          totalKharcha: amount,
+          balance: -amount,
+        },
+      },
+      {
+        new: true,
+      }
+    );
   }
   return entity;
 };
@@ -195,6 +215,7 @@ const addOutflow = asyncHandler(async (req, res) => {
 
   if (relatedTo === "Bepari") {
     const bepari = await handleRelatedEntityUpdate(
+      date,
       relatedTo,
       partyId,
       amount,
@@ -204,6 +225,19 @@ const addOutflow = asyncHandler(async (req, res) => {
       .status(201)
       .json(
         new ApiResponse(201, { ledger, bepari }, "Outflow added successfully")
+      );
+  } else if (relatedTo === "Gawali" || relatedTo === "Bhada") {
+    const akda = await handleRelatedEntityUpdate(
+      date,
+      relatedTo,
+      partyId,
+      amount,
+      date
+    );
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(201, { ledger, akda }, "Outflow added successfully")
       );
   }
 
@@ -219,7 +253,6 @@ const getLedgers = asyncHandler(async (req, res) => {
 
 const getLedger = asyncHandler(async (req, res) => {
   const { date } = req.params;
-  console.log(date);
   const ledger = await Ledger.aggregate([
     {
       $match: { date: new Date(`${date}`) },

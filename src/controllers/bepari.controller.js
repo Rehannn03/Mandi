@@ -49,8 +49,20 @@ const addKhata = asyncHandler(async (req, res) => {
     bepariId,
     totalBakra,
     date,
-    kharchaDetails: [],
     totalKharcha: 0,
+    kharchaDetails: [
+      {
+        commision: 0,
+        kasar: 0,
+        kalamFare: 0,
+        jagaBhada: 0,
+        motorBhada: 0,
+        karkoni: 0,
+        mandiGawali: 0,
+        charaBhusa: 0,
+        mazdoori: 0,
+      },
+    ],
     paidAmount: 0,
     balance: totalBakra * ratePerBakra - paidAmount || 0,
   });
@@ -255,18 +267,20 @@ const updateAkda = asyncHandler(async (req, res) => {
       date,
     },
     {
-      $push: {
-        kharchaDetails: {
-          commision,
-          kasar,
-          kalamFare,
-          jagaBhada,
-          motorBhada,
-          karkoni,
-          mandiGawali,
-          charaBhusa,
-          mazdoori,
-        },
+      $set: {
+        kharchaDetails: [
+          {
+            commision,
+            kasar,
+            kalamFare,
+            jagaBhada,
+            motorBhada,
+            karkoni,
+            mandiGawali,
+            charaBhusa,
+            mazdoori,
+          },
+        ],
       },
       totalKharcha: totalKharcha,
       paidAmount: paidAmount,
@@ -347,6 +361,7 @@ const getAkda = asyncHandler(async (req, res) => {
         totalKharcha: 1,
         paidAmount: 1,
         balance: 1,
+        settled: 1,
         bepari: {
           name: { $arrayElemAt: ["$bepari.name", 0] },
           address: { $arrayElemAt: ["$bepari.address", 0] },
